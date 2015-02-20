@@ -14,24 +14,41 @@ addpath(genpath('/home/marcos/Programming/ML/Information_Theory/MI'));
 % Library to compute noisy GPs
 addpath(genpath('/home/marcos/Programming/ML/TacoPig_withTortilla'));
 % Place matlab in the working directory
-cd /home/marcos/Programming/OutlierRejection/GBP/
+%cd /home/marcos/Programming/OutlierRejection/GBP/
+%cd /home/marcos/Programming/OutlierRejection/GPIS_INSAC
+cd ~/Programming/git_repo/GPDFiLMLCT/
 clear all; close all; clc 
 
+
+%% Control Variables
+experiment=1;
+display=1;% To display Graphics
+save_files=1; % Save Files in a specific path
+make_mivie=1;
+
+if(save_files)
+filename=sprintf('Snapshot_%s_%d',date,experiment);
+mkdir(sprintf('./snapshots/fig/%s',filename))
+mkdir(sprintf('./snapshots/pdf/%s',filename))
+end
 
 %% *** Data Visualization Libraries *** %%
 load('./Dataset/Inconsistent_Signals');
 load ./Dataset/Consistent_Signals
 load ./Dataset/Consistent_Signals% Load x(t), s1 and s2
 
-
 % Display Signals (s1,s2 and x(t))
+if(display)
 display_1;%script
+end
 %export_fig('./Pictures/Samples_s1s2.pdf')
 
 %% Load Inconsistent Signals: s3 and y3 (basically is just that one, for now) 
 %load('./Dataset/Inconsistent_Signals');
 % Display s3
+if (display)
 display_2;
+end
 
 %export_fig('./Pictures/Samples_s3s2.pdf')
 
@@ -49,7 +66,9 @@ GP1 = Solve_NoisyGP(X2,y2,NoiseFn2);
 [mf2, vf2] = GP1.query(xstar2);
 sf2  = sqrt(vf2);
 
+if(display)
 display_3;
+end
 %export_fig('./Pictures/Learnt_s1.pdf')
 
 % for s3
@@ -59,8 +78,9 @@ n3 = size(X3,2);
 xstar3 = linspace(0, 0.02, length(X3)); % and query on a grid
 NoiseFn3 = GP_ClampNoise(GP_MultiNoise([60]),[1], [7e-2]);  
 GP2 = Solve_NoisyGP(X3,y3,NoiseFn3);
+if(display)
 display_4;
-
+end
 %h(4) = scatter(t(s2(1:10)), y2(1:10), 'k','filled');
 %xlabel('time (in seconds)');
 %export_fig('./Pictures/Learnt_s2_smoke.pdf'); 
@@ -86,16 +106,21 @@ y_consistent=0;
 X_inconsistent=0;
 y_inconsistent=0;
 
-
 for (p=1:k)
     %GP_opt_plus=GXUpdate(GX_opt,X_test(p),y_test(p));
-    GP_opt_plus=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added)% Note:Npoints added including the new one
+    GP_opt_plus=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one
     %Lets visualise the updated model
     [mf_updated, vf_updated] = GP_opt_plus.query(xstar2);
     sf_updated  = sqrt(vf_updated);
 
+    if(display)
     display_iter; % Script to display graph
-    
+    if(save_files)
+        export_fig(sprintf('./snapshots/pdf/%s/LMLFusion_Iter%d.pdf',filename,p))
+        savefig(sprintf('./snapshots/fig/%s/LMLFusion_Iter%d.fig',filename,p))
+
+    end
+    end
 
     if(LMLTEST(GP_opt,GP_opt_plus)>0)
         npoints_added=npoints_added+1;
@@ -110,6 +135,12 @@ for (p=1:k)
         X_inconsistent=union(X_inconsistent,X_test(p),'legacy');
         y_inconsistent=union(y_inconsistent,y_test(p),'legacy');
     end
+    %close all
 end
 
+if(make_movie)
+    cd ./snapshots/pdf/
+    % Convert pdftoImages in Ubuntu
+    !for i in *.pdf; do convert "$i" "${i%.*}.png"; done
+end
 

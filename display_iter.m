@@ -1,6 +1,7 @@
 %display_iter.m
-figure('PaperSize',[20.98404194812 29.67743169791],...
-        'Color',[1 1 1]);
+    %clf
+    figure('PaperSize',[20.98404194812 29.67743169791],...
+    'Color',[1 1 1]);
     grid(axes,'on');
     hold on
     f_updated  = [mf_updated+2*(sf_updated),flipdim(mf_updated-2*(sf_updated),2)]';
