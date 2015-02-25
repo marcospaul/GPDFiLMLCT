@@ -21,10 +21,15 @@ clear all; close all; clc
 
 
 %% Control Variables
-experiment=1;
+experiment=1; % Set manually the number of the experiment, you can check
+% Note.txt for a description of the experiment 
+% Set variables to 1 to activate that option or to zero to desactivate.
 display=1;% To display Graphics
-save_files=1; % Save Files in a specific path
-make_mivie=1;
+save_files=0; % Save Files in a specific path
+make_movie=0;
+
+%% Testing Variables
+lml_test=0;
 
 if(save_files)
 filename=sprintf('Snapshot_%s_%d',date,experiment);
@@ -106,6 +111,18 @@ y_consistent=0;
 X_inconsistent=0;
 y_inconsistent=0;
 
+for(p=1:k)
+    
+   GP_opt_plus=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
+   lml_test(p)=GP_opt_plus.lml;
+end
+
+    
+
+
+
+
+
 for (p=1:k)
     %GP_opt_plus=GXUpdate(GX_opt,X_test(p),y_test(p));
     GP_opt_plus=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one
@@ -116,8 +133,16 @@ for (p=1:k)
     if(display)
     display_iter; % Script to display graph
     if(save_files)
-        export_fig(sprintf('./snapshots/pdf/%s/LMLFusion_Iter%d.pdf',filename,p))
-        savefig(sprintf('./snapshots/fig/%s/LMLFusion_Iter%d.fig',filename,p))
+        if(p<10)
+         export_fig(sprintf('./snapshots/pdf/%s/LMLFusion_Iter0%d.pdf',filename,p))
+         savefig(sprintf('./snapshots/fig/%s/LMLFusion_Iter0%d.fig',filename,p))
+        else
+         export_fig(sprintf('./snapshots/pdf/%s/LMLFusion_Iter%d.pdf',filename,p))
+         savefig(sprintf('./snapshots/fig/%s/LMLFusion_Iter%d.fig',filename,p))
+       
+        end
+        
+        
 
     end
     end
@@ -138,9 +163,22 @@ for (p=1:k)
     %close all
 end
 
+sprintf('Making movie ...')
 if(make_movie)
-    cd ./snapshots/pdf/
-    % Convert pdftoImages in Ubuntu
-    !for i in *.pdf; do convert "$i" "${i%.*}.png"; done
+   cd ./snapshots/pdf/
+   cd snapshots
+   cd pdf
+   cd filename
+   
+ %  Convert pdftoImages in Ubuntu manual
+    %!mkdir ./images
+    %cd ./images
+    %!for i in *.pdf; do convert "$i" "${i%.*}.png"; done
+    %! mv *.png ./images/
+    %!mkdir ./video
+    %cd images
+    %!mencoder mf://*.png -mf w=800:h=600:fps=3:type=png -ovc copy -oac copy -o output3.avi
+    %!mv output3.avi ../video/
+
 end
 

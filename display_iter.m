@@ -1,4 +1,4 @@
-%display_iter.m
+%display_iter2.m
     %clf
     figure('PaperSize',[20.98404194812 29.67743169791],...
     'Color',[1 1 1]);

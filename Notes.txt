@@ -1,1 +1,19 @@
 This is a Testing File for GIT ...
+Experiment #1: LML Test adding poits without order. No priorities specified. (*LML1.m)
+Experiment #3: LML Test adding point in order. Priority to points with the highest LML. (*LML3.m)
+Experiemnt #4: LML Test adding point in order. Priority to points with the lowest LML but highest than the model. (*LML4.m)
+Experiemnt #5: LML Test adding a group of points points. Add all the points that passes the test, repeat until no new points are found.
+
+
+Logs: 
+*LML5.m Modified on 25/02/2015 --> Batch processing, fixed visualization by changing legacy for stable. 
+
+
+FilesDescription:
+
+Experiments with different variations of parameters on the test.
+LML1 --> processing in geometric order.
+LML2 --> Processing in geometric order iteratively.
+LML3 --> Processing iteratively prioritizing points that maximises LML.
+LML4 --> Processing iteratively prioritizing points that minimises LML.
+LML5 --> Batch processing all points that passes the test iteratively.
