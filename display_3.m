@@ -15,3 +15,7 @@ set(legend,...
 %xlabel('time (in seconds)');
 ylim(gca,[-4 3]);
 title('S^1','FontSize',14);
+% Create xlabel
+    xlabel('Angle');
+    % Create ylabel
+    ylabel('Range');

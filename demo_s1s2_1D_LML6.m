@@ -5,6 +5,7 @@
 % sampled x(t) and adding noise with different levels.
 % S3 in constrast sampled half of a modified signal x'(t) (e.g. a virtual wall) 
 % and half of x(t). 
+% Using Cholesky updates
 
 
 %Note: Rebuilding entire model. 
@@ -24,12 +25,12 @@ clear all; close all; clc
 
 
 %% Control Variables
-experiment=6; % Set manually the number of the experiment, you can check
+experiment=2; % Set manually the number of the experiment, you can check
 % Note.txt for a description of the experiment 
 % Set variables to 1 to activate that option or to zero to desactivate.
 display=1;% To display Graphics
-save_files=0; % Save Files in a specific path
-make_movie=0;
+save_files=1; % Save Files in a specific path
+make_movie=1;
 
 %% Testing Variables
 lml_test=0;
@@ -68,6 +69,7 @@ y2= [y2]';
 n2 = size(X2,2);
 xstar2 = linspace(0, 0.02, length(X2)); % and query on a grid
 
+
 NoiseFn2 = GP_ClampNoise(GP_MultiNoise([60]),[1], [4e-1]);    
 GP1 = Solve_NoisyGP(X2,y2,NoiseFn2);
 [mf2, vf2] = GP1.query(xstar2);
@@ -98,12 +100,13 @@ X_opt=X2;
 y_opt=y2;
 GP_opt=GP1;
 
+
 X_test=X3;
 y_test=y3;
 k=length(X3);
 
 % Parameters
-npoints_added=0;
+npoints_added=1;
 npoints_originalmodality=60;
 p=1;
 c_update=0;
@@ -114,61 +117,57 @@ y_inconsistent=[];
 tested_index=0;
 tc=0;
 flag_modelup=1;
-indextotext=0;
 
 
+
+%clear GP_opt_plus
+%clear lml_test
 while(flag_modelup)
     flag_modelup=0;
-    indextotest=[];
-    X_inconsistent=[];
-    y_inconsistent=[];
     for(p=1:k)
-      if(p~=tested_index)
-       GP_opt_plus(p)=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added+1);% Note:Npoints added including the new one 
-       %sprintf('in')
-         if(LMLTEST(GP_opt,GP_opt_plus(p))>0) % does it pass the test. 
-           %lml_test(p)=GP_opt_plus(p).lml;
-           indextotest(p)=p;
-         else
-           X_inconsistent=union(X_inconsistent,X_test(p),'stable'); %legacy if order, stable not ordered
-           y_inconsistent=union(y_inconsistent,y_test(p),'stable');
-         end   
+       if(p~=tested_index)
+       % GP_opt_plus(p)=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
+       GP_test=copy_model(GP_opt);
+       GP_opt_plus(p)=GXUpdate_L(GP_test,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
+       lml_test(p)=GP_opt_plus(p).lml;
       end
     end
-    
-    % now take the equivalent p index for idx
-    %Select the one that passes the test. 
-    idx=find(indextotest);
-    %if(tc==0)
-    %    npoints_added=length(idx);
-    %end
-    npoints_added=npoints_added+length(idx);
-    GP_opt_plus=GXUpdate(GP_opt,X_opt,y_opt,X_test(idx),y_test(idx),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one            
-    [mf_updated, vf_updated] = GP_opt_plus.query(xstar2);
+    %plot([1:60],GP_opt.lml,'r','LineWidth',6)
+    %hold on
+    %plot(lml_test,'LineWidth',2)
+
+    % Now select the point with the max LML
+    max_point=max(lml_test);
+    [value,idx]=max(lml_test);
+    % Update the model with the max value
+    [mf_updated, vf_updated] = GP_opt_plus(idx).query(xstar2);
     sf_updated  = sqrt(vf_updated);
-   
-      
-    if(LMLTEST(GP_opt,GP_opt_plus)>0)
-        %npoints_added=length(idx); % WARNING: not sure if this is correct
+    p=idx;
+
+    lml_test(idx)=-90000; % Just to discard
+    GP_opt_plus(idx).lml=lml_test(idx);
+  
+    if(LMLTEST(GP_opt,GP_opt_plus(idx))>0)
+        npoints_added=npoints_added+1;
         sprintf('updating model ... %d',c_update)
-        GP_opt=GP_opt_plus; % model updated
-        X_opt=[X_opt,X_test(idx)]; % Update X
-        y_opt=[y_opt,y_test(idx)]; % Update y
-        X_consistent=union(X_consistent,X_test(idx),'stable');
-        y_consistent= union(y_consistent,y_test(idx),'stable');
+        GP_opt=GP_opt_plus(idx); % model updated
+        X_opt=[X_opt,X_test(p)]; % Update X
+        y_opt=[y_opt,y_test(p)]; % Update y
+        X_consistent=union(X_consistent,X_test(p),'stable');
+        y_consistent= union(y_consistent,y_test(p),'stable');
         tc=tc+1;
-        tested_index=union(tested_index,idx,'stable');%WARNING
-        c_update=c_update+1;
-        %tested_index(tc)=idx;
+        tested_index(tc)=p;
         flag_modelup=1;
-        %npoints_added=npoints_added+1; %for the next iteration
-    else
-        %X_inconsistent=union(X_inconsistent,X_test(idx),'legacy');
-        %y_inconsistent=union(y_inconsistent,y_test(idx),'legacy');
+    %else
+        members=~(ismember([1:k],tested_index));
+        X_inconsistent=X_test.*members;
+        y_inconsistent=y_test.*members;
+        %X_inconsistent=union(X_inconsistent,X_test(idx),'stable');
+        %y_inconsistent=union(y_inconsistent,y_test(idx),'stable');
     end
     
      if(display)
-        display_iter2; % Script to display graph
+        display_iter; % Script to display graph
         if(save_files)
             if(tc<10)
                 export_fig(sprintf('./snapshots/pdf/%s/LMLFusion_Iter0%d.pdf',filename,tc))
@@ -180,12 +179,8 @@ while(flag_modelup)
 
         end
     end
-
- end
-        
-
-    
-    
+end
+ 
 if(make_movie)
    cd ./snapshots/pdf/
    cd(filename)
@@ -198,7 +193,9 @@ if(make_movie)
     !mencoder mf://*.png -mf w=800:h=600:fps=3:type=png -ovc copy -oac copy -o ./video/output3.avi
     
     ! mv *.png ./images
-
+cd ..
+cd ..
+cd ..
 end
 %for i in *.png; do mencoder mf://"$i" -mf w=800:h=600:fps=3:type=png -ovc copy -oac copy -o output2.avi; done
 

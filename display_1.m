@@ -12,3 +12,7 @@ legend('GT','X^1','X^2');
 set(legend,...
     'Position',[0.434313057085632 0.773798076923083 0.150347222222222 0.143990384615385]);
 ylim(gca,[-4 3]); 
+% Create xlabel
+    xlabel('Angle');
+    % Create ylabel
+    ylabel('Range');

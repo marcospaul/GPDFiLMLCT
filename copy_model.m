@@ -1,0 +1,26 @@
+function GPA=copy_model(GPB)
+GPA=GP_NoisyInputs();
+
+GPA.X_noise=GPB.X_noise;
+GPA.mu=GPB.mu;
+GPA.K=GPB.K;
+GPA.K_noise=GPB.K_noise;
+GPA.tmphypers=GPB.tmphypers;
+GPA.meanpar=GPB.meanpar;
+GPA.covpar=GPB.covpar;
+GPA.noisepar=GPB.noisepar;
+GPA.alpha=GPB.alpha;
+GPA.alpha_noise=GPB.alpha_noise;
+GPA.opts=GPB.opts;
+GPA.factorisation=GPB.factorisation;
+GPA.factors=GPB.factors;
+GPA.invK=GPB.invK;
+GPA.invK_noise=GPB.invK_noise;
+GPA.lml=GPB.lml;
+GPA.objective_function=GPB.objective_function;
+GPA.solver_function=GPB.solver_function;
+GPA.has_been_solved=GPB.has_been_solved;
+GPA.MeanFn=GPB.MeanFn;
+GPA.CovFn=GPB.CovFn;
+GPA.X=GPB.X;
+GPA.y=GPB.y;
