@@ -25,7 +25,7 @@ clear all; close all; clc
 
 
 %% Control Variables
-experiment=2; % Set manually the number of the experiment, you can check
+experiment=3; % Set manually the number of the experiment, you can check
 % Note.txt for a description of the experiment 
 % Set variables to 1 to activate that option or to zero to desactivate.
 display=1;% To display Graphics
@@ -107,7 +107,7 @@ k=length(X3);
 
 % Parameters
 npoints_added=1;
-npoints_originalmodality=60;
+npoints_originalmodality=k;
 p=1;
 c_update=0;
 X_consistent=[];
@@ -126,9 +126,9 @@ while(flag_modelup)
     flag_modelup=0;
     for(p=1:k)
        if(p~=tested_index)
-       % GP_opt_plus(p)=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
+       GP_opt_plus(p)=GXUpdate(GP_opt,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
        GP_test=copy_model(GP_opt);
-       GP_opt_plus(p)=GXUpdate_L(GP_test,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
+       %GP_opt_plus(p)=GXUpdate_L(GP_test,X_opt,y_opt,X_test(p),y_test(p),npoints_originalmodality,npoints_added);% Note:Npoints added including the new one 
        lml_test(p)=GP_opt_plus(p).lml;
       end
     end

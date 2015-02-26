@@ -6,7 +6,9 @@ Experiemnt #5: LML Test adding a group of points points. Add all the points that
 Experiment #6: LML Test as 3 but using Cholesky update intead recomputation of the whole model. 
 - Experiment 1 in LML6 normal update
 - Experiment 2 in LML6 with Cholesky Update
-
+- Experiment 3 as one but with updated graphics
+- Experiment 4: Using LML7, with no cholesky update
+- Experiment 5: Using LML7, with cholesky update and saving with iterations.
 
 Logs: 
 *LML5.m Modified on 25/02/2015 --> Batch processing, fixed visualization by changing legacy for stable. 
@@ -21,3 +23,4 @@ LML3 --> Processing iteratively prioritizing points that maximises LML.
 LML4 --> Processing iteratively prioritizing points that minimises LML.
 LML5 --> Batch processing all points that passes the test iteratively.
 LML6 --> As LML3 but with Cholesky update.
+LML7 --> as 2, but with option of cholesky update
